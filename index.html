@@ -1,0 +1,243 @@
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dualidad | Masterpiece Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Plus+Jakarta+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #fdfbf7; --text: #1a1a1a; --accent: #b5935a; --card: #ffffff;
+        }
+        .dark-mode {
+            --bg: #080808; --text: #f1f1f1; --accent: #8e9aaf; --card: #111111;
+        }
+
+        body { 
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.8s ease; overflow-x: hidden;
+        }
+        .font-serif { font-family: 'Cinzel', serif; }
+
+        /* Contenedor de Zoom */
+        .zoom-container {
+            position: relative; overflow: hidden; cursor: crosshair;
+            border-radius: 4px; background: var(--card);
+        }
+        .zoom-image {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.1s ease-out, opacity 0.5s ease;
+        }
+        .zoom-lens {
+            position: absolute; width: 150px; height: 150px;
+            border: 1px solid var(--accent); border-radius: 50%;
+            pointer-events: none; opacity: 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            transform: translate(-50%, -50%); z-index: 10;
+        }
+
+        /* Botón Modo Noche */
+        .theme-switch {
+            width: 60px; height: 30px; background: var(--text);
+            border-radius: 30px; position: relative; cursor: pointer;
+        }
+        .theme-dot {
+            width: 24px; height: 24px; background: var(--bg);
+            border-radius: 50%; position: absolute; top: 3px; left: 3px;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .dark-mode .theme-dot { transform: translateX(30px); }
+
+        /* Miniaturas */
+        .thumb {
+            filter: grayscale(1); transition: 0.4s; border: 1px solid transparent;
+        }
+        .thumb.active { filter: grayscale(0); border-color: var(--accent); scale: 1.05; }
+
+        .cart-sidebar {
+            background: rgba(var(--bg-rgb), 0.8); backdrop-filter: blur(30px);
+            border-left: 1px solid rgba(181, 147, 90, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="fixed w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white">
+        <div class="text-xl font-bold tracking-[0.5em] font-serif uppercase">Dualidad</div>
+        <div class="flex items-center gap-8">
+            <div class="theme-switch" onclick="toggleTheme()">
+                <div class="theme-dot"></div>
+            </div>
+            <button onclick="toggleCart()" class="relative">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-amber-600 text-[10px] w-4 h-4 rounded-full flex items-center justify-center opacity-0 transition-all">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            
+            <div class="space-y-6">
+                <div class="zoom-container aspect-square shadow-2xl" id="zoom-box">
+                    <img id="main-view" src="https://i.postimg.cc/x8gBrX51/D-NQ-NP-2X-817749-MLA106878709239-022026-F.webp" class="zoom-image">
+                    <div id="lens" class="zoom-lens"></div>
+                </div>
+
+                <div class="grid grid-cols-4 md:grid-cols-8 gap-3" id="thumb-gallery">
+                    </div>
+            </div>
+
+            <div class="flex flex-col justify-center space-y-10">
+                <header>
+                    <div class="flex items-center gap-3 text-amber-600 mb-2">
+                        <span class="h-px w-8 bg-amber-600"></span>
+                        <span class="text-[10px] uppercase tracking-[0.4em]">Handcrafted Luxury</span>
+                    </div>
+                    <h1 class="text-6xl font-serif mb-6 leading-[1.1]">Sol & Luna <br> <span class="opacity-40 italic font-light">Eternos</span></h1>
+                    <p class="text-lg font-light leading-relaxed opacity-70">
+                        Una sola pieza, dos almas. Forjado para representar la danza eterna entre el oro solar y la plata lunar. Una inversión en arte portable.
+                    </p>
+                </header>
+
+                <div class="space-y-2">
+                    <div class="text-4xl font-light">$199.00</div>
+                    <p class="text-[10px] uppercase tracking-widest opacity-40">Impuestos y envío global incluidos</p>
+                </div>
+
+                <div class="pt-6">
+                    <button onclick="addToCart()" class="w-full bg-zinc-900 text-white dark:bg-white dark:text-black py-5 rounded-sm uppercase text-xs tracking-[0.4em] font-bold hover:bg-amber-700 transition-all duration-500 transform active:scale-95 shadow-xl">
+                        Añadir a la bolsa
+                    </button>
+                </div>
+
+               
+            </div>
+        </div>
+    </main>
+
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-[450px] cart-sidebar z-[100] translate-x-full transition-transform duration-700 p-12 flex flex-col">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="font-serif text-2xl uppercase tracking-widest">Tu Bolsa</h2>
+            <button onclick="toggleCart()" class="text-xs uppercase opacity-40 hover:opacity-100">Cerrar</button>
+        </div>
+        <div id="cart-content" class="flex-1 overflow-y-auto">
+            <p class="text-center italic opacity-30 mt-10">Tu bolsa está esperando tu selección.</p>
+        </div>
+        <div id="cart-total-section" class="hidden border-t border-black/10 pt-8">
+            <div class="flex justify-between text-2xl font-serif mb-8 uppercase">
+                <span>Total</span>
+                <span>$199.00</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-green-700 text-white py-6 rounded-sm text-[10px] tracking-[0.3em] font-bold uppercase hover:bg-green-800 transition shadow-2xl">
+                Finalizar pedido por WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const images = [
+            "https://i.postimg.cc/x8gBrX51/D-NQ-NP-2X-817749-MLA106878709239-022026-F.webp",
+            "https://i.postimg.cc/C5J9yR7S/D-NQ-NP-2X-982633-MLA106429542651-022026-F.webp",
+            "https://i.postimg.cc/WzSxRd8J/D-Q-NP-2X-606912-MLA93342612831-092025-F.webp",
+            "https://i.postimg.cc/XqxtMrLv/D-Q-NP-2X-639556-MLA92928841490-092025-F.webp",
+            "https://i.postimg.cc/3N9zMk1G/D-Q-NP-2X-817302-MLA95530832884-102025-F.webp",
+            "https://i.postimg.cc/rsg76Djz/D-Q-NP-2X-818542-MLA93342732139-092025-F.webp",
+            "https://i.postimg.cc/vTXCR4hx/D-Q-NP-2X-882157-MLA92928930508-092025-F.webp",
+            "https://i.postimg.cc/FzGwtYpR/D-Q-NP-2X-895555-MLA93342583047-092025-F.webp"
+        ];
+
+        // Generar Galería
+        const gallery = document.getElementById('thumb-gallery');
+        images.forEach((img, i) => {
+            const el = document.createElement('img');
+            el.src = img;
+            el.className = `thumb aspect-square object-cover cursor-pointer ${i===0?'active':''}`;
+            el.onclick = () => switchImage(el);
+            gallery.appendChild(el);
+        });
+
+        function switchImage(el) {
+            const main = document.getElementById('main-view');
+            gsap.to(main, { opacity: 0, scale: 0.98, duration: 0.3, onComplete: () => {
+                main.src = el.src;
+                gsap.to(main, { opacity: 1, scale: 1, duration: 0.5 });
+            }});
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Lógica de ZOOM Lupa
+        const zoomBox = document.getElementById('zoom-box');
+        const zoomImg = document.getElementById('main-view');
+        const lens = document.getElementById('lens');
+
+        zoomBox.addEventListener('mousemove', (e) => {
+            const { left, top, width, height } = zoomBox.getBoundingClientRect();
+            const x = e.clientX - left;
+            const y = e.clientY - top;
+
+            // Mostrar lente
+            lens.style.opacity = '1';
+            lens.style.left = `${x}px`;
+            lens.style.top = `${y}px`;
+
+            // Calcular zoom
+            const xPercent = (x / width) * 100;
+            const yPercent = (y / height) * 100;
+            
+            zoomImg.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+            zoomImg.style.transform = 'scale(2.5)';
+        });
+
+        zoomBox.addEventListener('mouseleave', () => {
+            lens.style.opacity = '0';
+            zoomImg.style.transform = 'scale(1)';
+        });
+
+        // Tema y Carrito
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-sidebar').classList.toggle('translate-x-full');
+        }
+
+        let cartAdded = false;
+        function addToCart() {
+            cartAdded = true;
+            const dot = document.getElementById('cart-count');
+            dot.innerText = '1';
+            dot.style.opacity = '1';
+            
+            document.getElementById('cart-content').innerHTML = `
+                <div class="flex gap-6 animate-fadeIn">
+                    <img src="${zoomImg.src}" class="w-24 h-32 object-cover shadow-xl">
+                    <div class="flex-1 pt-2">
+                        <h3 class="font-serif text-xl">Sol & Luna Eternos</h3>
+                        <p class="text-amber-600 font-bold">$199.00</p>
+                        <p class="text-[10px] uppercase opacity-40 mt-4">Empaque de Lujo Incluido</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('cart-total-section').classList.remove('hidden');
+            toggleCart();
+            
+            gsap.from(dot, { scale: 3, duration: 0.6, ease: "elastic.out" });
+        }
+
+        function checkout() {
+            const msg = encodeURIComponent("¡Hola! Deseo adquirir la pieza exclusiva 'Sol & Luna Eternos' por $199. ¿Podrían confirmarme disponibilidad y medios de pago?");
+            window.open(`https://wa.me/2204891875?text=${msg}`);
+        }
+
+        // Animación de Entrada
+        gsap.from("main", { opacity: 0, y: 30, duration: 1.5, ease: "power4.out" });
+    </script>
+</body>
+</html>
